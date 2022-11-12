@@ -1,0 +1,26 @@
+const db = require('../db/mysql') 
+const jwt = require('jsonwebtoken')
+
+function login(req, res) {
+    let param = [req.body.username]
+    let selectQuery = `SELECT * FROM user where name = ?`
+
+    db.query(selectQuery, param, function (error, results, fields) {
+        if (error) throw error;
+        if (results.length < 1) {
+            return res.status(400).send({ message: 'Data not found', data: results })
+        }
+
+        const payload = {
+            id: results.id,
+            username: results.username,
+        }
+        const token = jwt.sign(payload, 'secret', { expiresIn: '7d' })
+
+        return res.send({ message: 'Data is found', data: { token: token } })
+    });
+}
+
+module.exports = {
+    login,
+}
